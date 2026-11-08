@@ -128,8 +128,19 @@ secure, so the login needs https there.
 Upgrade from 2.x
 ----------------
 Version 3.0 has a new data model with a new initial migration. It needs a new, empty database: `migrate` refuses
-to run on the database of 2.x (`InconsistentMigrationHistory`). Keep the old database for a rollback and configure
-the identity providers and clients again (or load `initial_data`). The redirect URI of 2.x (`/oauth2/login/`) still
+to run on the database of 2.x (`InconsistentMigrationHistory`). Keep the old database for a rollback and take the
+identity providers and clients over (users and tokens are not migrated, users are created again at their next login):
+
+    # the export contains the client secrets: umask 077 makes the file readable only by you
+    (umask 077; psql "$OLD_DATABASE_URL" --no-align --tuples-only \
+        --file apps/relying_party/management/commands/legacy_export.sql > legacy.json)
+    # in the new instance, without initial_data (DJANGO_LOAD_INITIAL_DATA off); --dry-run shows the result first
+    ./manage.py import_legacy_config legacy.json --dry-run
+    ./manage.py import_legacy_config legacy.json
+    rm legacy.json
+
+The docstring of `import_legacy_config` lists how the old fields are mapped and what is skipped (providers without
+issuer, native and service clients). The redirect URI of 2.x (`/oauth2/login/`) still
 works; new are the post logout redirect URI `/oidc/logged-out/` and the logout URIs, see the admin page of a client.
 The environment variables `SSO.STAFF_GROUPS`, `SSO.SUPERUSER_GROUP`, `OPENID_SSO_SERVER_BASE_URL` and
 `ALWAYS_REFRESH_TOKENS` are gone; staff and superuser roles are set per client.

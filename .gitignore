@@ -10,3 +10,5 @@ htdocs
 .venv
 venv
 /package-lock.json
+# export of the 2.x configuration with client secrets (README, Upgrade from 2.x)
+/legacy.json

@@ -1,7 +1,9 @@
 import base64
 import hashlib
 import json
+import tempfile
 import time
+from io import StringIO
 from unittest import mock
 from urllib.parse import parse_qs, urlsplit
 
@@ -10,6 +12,8 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from django.contrib.sessions.models import Session
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from jwt.algorithms import RSAAlgorithm
@@ -1083,3 +1087,88 @@ class DiscoveryAdminTest(DemoTestCase):
         self.idp.refresh_from_db()
         self.assertEqual(self.idp.token_endpoint, 'https://own.example.com/token')
         self.assertEqual(self.idp.authorization_endpoint, '')
+
+
+class ImportLegacyConfigTest(TestCase):
+    """The import of the 2.x configuration (management command import_legacy_config)."""
+
+    def legacy_identity_provider(self, **fields):
+        row = {
+            'id': 2, 'name': 'g10f', 'issuer': 'https://sso.g10f.de', 'is_active': True, 'order': 0,
+            'uri': 'https://sso.g10f.de/', 'authorization_endpoint': 'https://sso.g10f.de/oauth2/authorize/',
+            'token_endpoint': 'https://sso.g10f.de/oauth2/token/', 'end_session_endpoint': '', 'revoke_uri': '',
+            'userinfo_endpoint': 'https://sso.g10f.de/oauth2/userinfo/', 'picture_endpoint': '',
+            'jwks_uri': 'https://sso.g10f.de/oauth2/jwks/', 'profile_uri': '', 'is_supporting_http_auth_header': False,
+            'check_session_iframe': '', 'user_navigation_uri': '', 'is_secure': True, 'check_roles': False,
+            'extend_access_uri': '',
+        }
+        return {**row, **fields}
+
+    def legacy_client(self, **fields):
+        row = {
+            'id': 1, 'identity_provider_id': 2, 'name': '', 'type': 'web', 'response_type': '',
+            'default_scopes': 'openid profile', 'application_id': '', 'client_id': 'web-client',
+            'client_secret': 'secret', 'is_active': True, 'claims': '', 'max_age': '01:00:00',
+            'max_age_seconds': 3600, 'acr_values': '', 'use_pkce': False, 'roles_claim': 'roles',
+            'redirect_uri': '/oauth2/login/', 'kc_idp_hint': 'google', 'ui_locales': '', 'claims_locales': '',
+            'prompt': '',
+        }
+        return {**row, **fields}
+
+    def run_import(self, data, *args):
+        with tempfile.NamedTemporaryFile('w', suffix='.json') as export_file:
+            json.dump(data, export_file)
+            export_file.flush()
+            out = StringIO()
+            call_command('import_legacy_config', export_file.name, *args, stdout=out)
+        return out.getvalue()
+
+    def test_import(self):
+        data = {
+            'identity_providers': [self.legacy_identity_provider(),
+                                   self.legacy_identity_provider(id=6, name='Facebook', issuer='')],
+            'clients': [self.legacy_client(),
+                        self.legacy_client(id=2, type='javascript', client_id='js-client', default_scopes=''),
+                        self.legacy_client(id=3, type='native', client_id='native-client'),
+                        self.legacy_client(id=4, identity_provider_id=6, client_id='facebook-client')],
+            'api_clients': [{'id': 1, 'identity_provider_id': 2, 'client_id': 'api', 'is_active': True}],
+        }
+        out = self.run_import(data)
+
+        identity_provider = IdentityProvider.objects.get()
+        self.assertEqual(identity_provider.issuer, 'https://sso.g10f.de')
+        self.assertEqual(identity_provider.home_uri, 'https://sso.g10f.de/')
+        self.assertTrue(identity_provider.userinfo_token_in_query)
+        self.assertEqual(Client.objects.count(), 2)
+        web = Client.objects.get(client_id='web-client')
+        implicit = Client.objects.get(client_id='js-client')
+        self.assertEqual((web.flow, web.max_age, web.redirect_uri, web.disable_pkce),
+                         (Client.FLOW_CODE, 3600, '/oauth2/login/', False))
+        self.assertEqual(json.loads(web.extra_authorization_params), {'kc_idp_hint': 'google'})
+        self.assertEqual((implicit.flow, implicit.scope), (Client.FLOW_IMPLICIT, 'openid profile email'))
+        self.assertFalse(ApiClient.objects.get().require_jwt_access_token_type)
+        self.assertIn('client 3 (native) of g10f: skipped', out)
+
+    def test_max_age_zero_means_none(self):
+        # 2.x didn't send max_age when it was 0, 3.x would send and enforce max_age=0.
+        data = {'identity_providers': [self.legacy_identity_provider()],
+                'clients': [self.legacy_client(max_age='00:00:00', max_age_seconds=0)], 'api_clients': []}
+        self.run_import(data)
+        self.assertIsNone(Client.objects.get().max_age)
+
+    def test_missing_field(self):
+        row = self.legacy_identity_provider()
+        del row['user_navigation_uri']
+        data = {'identity_providers': [row], 'clients': [], 'api_clients': []}
+        with self.assertRaisesMessage(CommandError, "lacks the field 'user_navigation_uri'"):
+            self.run_import(data)
+        self.assertFalse(IdentityProvider.objects.exists())
+
+    def test_dry_run_and_non_empty_database(self):
+        data = {'identity_providers': [self.legacy_identity_provider()], 'clients': [], 'api_clients': []}
+        self.run_import(data, '--dry-run')
+        self.assertFalse(IdentityProvider.objects.exists())
+
+        self.run_import(data)
+        with self.assertRaisesMessage(CommandError, 'already contains identity providers'):
+            self.run_import(data)
