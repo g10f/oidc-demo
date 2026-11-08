@@ -193,13 +193,6 @@ class CallbackTest(DemoTestCase):
                                    {'code': 'code-1', 'state': request['state'], 'iss': ISSUER})
         self.assertContains(response, 'invalid_state', status_code=400)
 
-    def test_old_callback_path_works(self):
-        request = self.start_login()
-        self.fake.token_responses.append(self.token_response({'nonce': request['nonce']}))
-        response = self.client.get('/oauth2/login/', {'code': 'code-1', 'state': request['state'], 'iss': ISSUER})
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(User.objects.filter(sub='user-1').exists())
-
     def test_mix_up_is_detected(self):
         # RFC 9207: the answer comes from another identity provider than the one the login was started at.
         request = self.start_login()
@@ -1142,8 +1135,7 @@ class ImportLegacyConfigTest(TestCase):
         self.assertEqual(Client.objects.count(), 2)
         web = Client.objects.get(client_id='web-client')
         implicit = Client.objects.get(client_id='js-client')
-        self.assertEqual((web.flow, web.max_age, web.redirect_uri, web.disable_pkce),
-                         (Client.FLOW_CODE, 3600, '/oauth2/login/', False))
+        self.assertEqual((web.flow, web.max_age, web.disable_pkce), (Client.FLOW_CODE, 3600, False))
         self.assertEqual(json.loads(web.extra_authorization_params), {'kc_idp_hint': 'google'})
         self.assertEqual((implicit.flow, implicit.scope), (Client.FLOW_IMPLICIT, 'openid profile email'))
         self.assertFalse(ApiClient.objects.get().require_jwt_access_token_type)

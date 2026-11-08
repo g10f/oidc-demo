@@ -89,8 +89,7 @@ class ClientAdmin(admin.ModelAdmin):
     list_filter = ('flow', 'is_active', 'identity_provider')
     fieldsets = (
         ('Standard', {'fields': ('identity_provider', 'name', 'is_active', 'flow', 'client_id', 'client_secret',
-                                 'token_endpoint_auth_method', 'scope', 'id_token_signed_response_alg',
-                                 'redirect_uri')}),
+                                 'token_endpoint_auth_method', 'scope', 'id_token_signed_response_alg')}),
         ('Optional request parameters', {'fields': ('prompt', 'max_age', 'acr_values', 'ui_locales',
                                                     'claims_locales', 'claims', 'extra_authorization_params')}),
         ('Roles', {'fields': ('roles_claim', 'staff_roles', 'superuser_roles')}),

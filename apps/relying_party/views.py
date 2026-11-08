@@ -74,7 +74,7 @@ def safe_next_url(request, url):
 def get_redirect_uri(request, client):
     if client.flow in (Client.FLOW_IMPLICIT, Client.FLOW_IMPLICIT_ID_TOKEN):
         return request.build_absolute_uri(reverse('relying_party:implicit'))
-    return request.build_absolute_uri(client.redirect_uri or reverse('relying_party:callback'))
+    return request.build_absolute_uri(reverse('relying_party:callback'))
 
 
 def active_clients(flow):
@@ -134,7 +134,7 @@ def callback(request):
     """Core 3.1.2.5: the identity provider sends the browser back with code and state (or an error)."""
     params = request.GET
     if 'state' not in params and 'code' not in params and 'error' not in params:
-        # A plain visit, e.g. of the old callback /oauth2/login/
+        # A plain visit of the callback, e.g. from the browser history
         return HttpResponseRedirect(reverse('relying_party:login'))
 
     pending = browser_session.pop_pending(request, params.get('state'))

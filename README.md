@@ -31,7 +31,7 @@ Pages
 |------------------------------|------------------------------------------------------------------------|
 | `/oidc/login/`               | authorization code flow with PKCE                                      |
 | `/oidc/login/<client>/`      | starts the login with a client (code or implicit flow)                 |
-| `/oidc/callback/`            | redirect URI of the code flow (`/oauth2/login/` of the versions < 3.0 also works) |
+| `/oidc/callback/`            | redirect URI of the code flow                                          |
 | `/oidc/device/`              | device authorization grant (RFC 8628)                                  |
 | `/oidc/device/<client>/`, `/oidc/device/poll/`, `/oidc/device/cancel/` | start, poll and cancel of the device flow (POST) |
 | `/oidc/implicit/`            | implicit flow (legacy), also the redirect URI of the implicit clients  |
@@ -140,8 +140,9 @@ identity providers and clients over (users and tokens are not migrated, users ar
     rm legacy.json
 
 The docstring of `import_legacy_config` lists how the old fields are mapped and what is skipped (providers without
-issuer, native and service clients). The redirect URI of 2.x (`/oauth2/login/`) still
-works; new are the post logout redirect URI `/oidc/logged-out/` and the logout URIs, see the admin page of a client.
+issuer, native and service clients). The redirect URI of 2.x (`/oauth2/login/`) is gone: register
+`/oidc/callback/` at each identity provider. New are also the post logout redirect URI `/oidc/logged-out/` and the
+logout URIs, see the admin page of a client.
 The environment variables `SSO.STAFF_GROUPS`, `SSO.SUPERUSER_GROUP`, `OPENID_SSO_SERVER_BASE_URL` and
 `ALWAYS_REFRESH_TOKENS` are gone; staff and superuser roles are set per client.
 

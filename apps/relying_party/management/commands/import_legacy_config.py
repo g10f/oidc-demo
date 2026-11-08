@@ -12,7 +12,8 @@ How the old fields are taken over:
 - Client type web → authorization code flow, javascript → implicit flow (id_token token, as 2.x requested it).
   native (oob redirect) and service/trusted (client credentials/password grant) are skipped, 3.x has no such flows.
 - default_scopes → scope (empty: the default of 3.x), kc_idp_hint → extra_authorization_params, max_age → seconds.
-- The redirect URI is kept: 2.x registered /oauth2/login/ at the identity providers, which 3.x still serves.
+- The redirect URI of 2.x (/oauth2/login/) is dropped, 3.x always uses /oidc/callback/: register it at each
+  identity provider, otherwise the login there fails with an invalid redirect_uri.
 - PKCE is always used, as RFC 9700 requires (use_pkce is not taken over). A provider that rejects the
   code_challenge parameter fails visibly at the login; then set "disable PKCE" in the admin.
 - staff_roles and superuser_roles stay empty: 2.x gave staff status for the groups of SSO.STAFF_GROUPS of every
@@ -168,7 +169,6 @@ class Command(BaseCommand):
             token_endpoint_auth_method=Client.AUTH_BASIC,  # 2.x sent the secret with HTTP Basic
             # 2.x left the scope out when it was empty, 3.x always sends one.
             scope=row['default_scopes'] or Client._meta.get_field('scope').default,
-            redirect_uri=row['redirect_uri'],
             prompt=row['prompt'],
             # 2.x left max_age out when it was 0 (an empty timedelta is false), 3.x would send max_age=0.
             max_age=row['max_age_seconds'] or None,

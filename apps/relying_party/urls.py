@@ -9,8 +9,6 @@ urlpatterns = [
     path('oidc/login/', views.login_page, name='login'),
     path('oidc/login/<int:client_id>/', views.start_login, name='start_login'),
     path('oidc/callback/', views.callback, name='callback'),
-    # The callback of the versions before 3.0, still registered at the identity providers.
-    path('oauth2/login/', views.callback, name='callback_legacy'),
     path('oidc/logout/', views.logout, name='logout'),
     path('oidc/logged-out/', views.logged_out, name='logged_out'),
     path('oidc/tokens/', views.tokens, name='tokens'),

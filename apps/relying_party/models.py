@@ -131,9 +131,6 @@ class Client(models.Model):
     id_token_signed_response_alg = models.CharField(
         'ID token signing algorithm', max_length=16, choices=ALG_CHOICES, default='RS256',
         help_text='The only algorithm accepted for the ID token. HS* uses the client secret as key.')
-    redirect_uri = models.CharField(
-        max_length=2048, blank=True,
-        help_text='Path or URL of the callback. Empty means /oidc/callback/ of this site.')
 
     # optional parameters of the authentication request (OpenID Connect Core 3.1.2.1, 5.5)
     prompt = models.CharField(max_length=255, blank=True)
