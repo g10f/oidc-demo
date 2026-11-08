@@ -34,7 +34,7 @@ ALWAYS_REFRESH_TOKENS = os.getenv('ALWAYS_REFRESH_TOKENS', 'False').lower() in (
 REQUESTS_LOG_LEVEL = os.getenv('REQUESTS_LOG_LEVEL', 'INFO')
 if REQUESTS_LOG_LEVEL == 'DEBUG':
     HTTPConnection.debuglevel = 2
-ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '[::1]'] + os.getenv('ALLOWED_HOSTS', 'oauth-python-sample.g10f.de').split(',')
+ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '[::1]'] + os.getenv('ALLOWED_HOSTS', 'oidc-demo.g10f.de').split(',')
 SILENCED_SYSTEM_CHECKS = ['admin.E408']
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 INTERNAL_IPS = ('127.0.0.1',)

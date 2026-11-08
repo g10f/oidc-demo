@@ -7,7 +7,7 @@ services:
     ports:
       - 8000:8000
     volumes:
-      - media_data:/opt/g10f/oauth-python-sample/htdocs/media
+      - media_data:/opt/g10f/oidc-demo/htdocs/media
     environment:
       - DATABASE_URL=postgres://client:client@localhost:5432/client
       - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY to a long random value}

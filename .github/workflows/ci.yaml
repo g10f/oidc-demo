@@ -6,7 +6,7 @@ on:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
 env:
-  IMAGE: ghcr.io/g10f/oauth-python-sample
+  IMAGE: ghcr.io/g10f/oidc-demo
 
 jobs:
   # Each platform is built natively on its own runner, without QEMU emulation. The images are pushed

@@ -27,7 +27,7 @@ RUN set -ex \
 COPY --from=build /venv /venv
 
 ARG USERNAME=worker
-ARG PROJ_NAME=oauth-python-sample
+ARG PROJ_NAME=oidc-demo
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 

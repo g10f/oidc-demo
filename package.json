@@ -1,5 +1,5 @@
 {
-  "name": "oidc-test-app",
+  "name": "oidc-demo",
   "private": true,
   "description": "Frontend assets of the OAuth2 / OpenID Connect sample client",
   "author": "g10f",

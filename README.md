@@ -1,5 +1,5 @@
-OAuth2 / OpenID Connect sample client
-=====================================
+OpenID Connect demo client
+==========================
 Django web app that logs in at an OpenID Connect identity provider with the authorization code flow
 and shows the ID token, the access token and the user info of the logged in user.
 
@@ -29,7 +29,7 @@ Environment variables:
 |-------------------------------------------|--------------------------------------------------|----------------------------------------------|
 | `DATABASE_URL`                            | `postgres://client:client@localhost:5432/client` | PostgreSQL database                          |
 | `SECRET_KEY`                              | none, required except for `runserver` and `test` | Django secret key, signs the session cookies, the app does not start without it |
-| `ALLOWED_HOSTS`                           | `oauth-python-sample.g10f.de`                    | comma separated list, localhost is always allowed |
+| `ALLOWED_HOSTS`                           | `oidc-demo.g10f.de`                              | comma separated list, localhost is always allowed |
 | `OPENID_SSO_SERVER_BASE_URL`              | `https://sso.g10f.de/`                           | base URL of the identity provider            |
 | `ALWAYS_REFRESH_TOKENS`                   | `False`                                          | refresh the tokens on every request          |
 | `SSO.STAFF_GROUPS`                        | `Staff,Superuser`                                | groups that get staff status                 |
@@ -106,7 +106,7 @@ A release is a git tag `X.Y.Z`. It is created with `git release` (a small releas
 It writes the new version to `apps/client/__init__.py`, commits it as `release X.Y.Z`,
 creates the tag and pushes both. The CI checks that the tag matches `__version__`.
 
-The CI builds the image `ghcr.io/g10f/oauth-python-sample:X.Y.Z` (and `latest`) natively for amd64
+The CI builds the image `ghcr.io/g10f/oidc-demo:X.Y.Z` (and `latest`) natively for amd64
 and arm64 and starts the deploy: if the secret `DEPLOY_WORKFLOW` (`owner/repo/workflow-file`) is set, it starts that
 workflow with the inputs `image` and `version`, using the secret `DEPLOY_TOKEN`. Without it, e.g. in a fork,
 nothing is deployed. A push without a tag does not start the CI.
