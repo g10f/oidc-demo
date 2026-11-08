@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% from "macros.html" import breadcrumb %}
+{% block title %}{{ _('Error') }} | OIDC Demo{% endblock %}
+{% block breadcrumb %}{{ breadcrumb(_('Error')) }}{% endblock %}
+{% block content %}
+  <h1>{{ _('Login error') }}</h1>
+  {# The description comes from protocol.py and stays in English, it uses the terms of the specs. #}
+  <div class="alert alert-danger" role="alert"><code>{{ error.error }}</code>: {{ error.description }}</div>
+  <p><a href="{{ url('relying_party:login') }}">{{ _('Log in again') }}</a></p>
+{% endblock %}

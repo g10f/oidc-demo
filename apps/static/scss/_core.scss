@@ -1,9 +1,11 @@
+// same as alert-danger for fit with django message.tags
+
 html {
   overflow-y: scroll;
 }
 
 body {
-  padding-top: 70px;
+  padding-top: 5rem;
 }
 
 main {
@@ -11,6 +13,9 @@ main {
 }
 
 aside {
+  @include media-breakpoint-down(md) {
+    order: 6;
+  }
   @include make-col-ready();
   @include media-breakpoint-up(md) {
     @include make-col(5);
@@ -116,16 +121,30 @@ noscript div {
   margin-bottom: -9px;
 }
 
-.g10f-centered {
-  margin-right: auto;
-  margin-left: auto;
+section {
+  .g10f-centered {
+    margin-right: auto;
+    margin-left: auto;
 
-  @include make-col-ready();
-  @include media-breakpoint-up(md) {
-    @include make-col(10);
+    @include make-col-ready();
+    @include media-breakpoint-up(md) {
+      @include make-col(10);
+    }
+    @include media-breakpoint-up(lg) {
+      @include make-col(8);
+    }
   }
-  @include media-breakpoint-up(lg) {
-    @include make-col(8);
+}
+
+aside + section {
+  .g10f-centered {
+    @include make-col-ready();
+    @include media-breakpoint-up(md) {
+      @include make-col(12);
+    }
+    @include media-breakpoint-up(lg) {
+      @include make-col(12);
+    }
   }
 }
 
@@ -201,6 +220,7 @@ footer {
   > div {
     > ul {
       margin-top: 1rem;
+      padding-left: 0;
 
       > li {
         display: inline;

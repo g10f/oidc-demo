@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "macros.html" import breadcrumb, checks_table %}
+{% block title %}{{ _('User info') }} | OIDC Demo{% endblock %}
+{% block breadcrumb %}{{ breadcrumb(_('User info')) }}{% endblock %}
+{% block content %}
+  <h1>{{ _('User info') }}</h1>
+  <p>{{ _('The answer of the userinfo endpoint of %(provider)s to the access token (OpenID Connect Core 5.3).', provider=client.identity_provider) }}</p>
+  {{ checks_table(checks) }}
+
+  {% if is_http_url(picture) %}
+    <p><img src="{{ picture }}" alt="{{ _('Picture of the user') }}" width="100" class="rounded"></p>
+  {% endif %}
+  {% if picture_endpoint and not picture_scope %}
+    <p class="text-body-secondary">{% trans trimmed %}To upload a picture, the client must request the scope
+      <code>picture</code>.{% endtrans %}</p>
+  {% elif picture_endpoint %}
+    <form method="post" action="{{ url('relying_party:picture') }}" enctype="multipart/form-data" class="mb-3"
+          id="picture-form" data-max-size="{{ picture_max_size or '' }}"
+          data-too-large="{{ _('The image is larger than the identity provider accepts.') }}">
+      {{ csrf_input }}
+      <div class="input-group">
+        <input class="form-control" type="file" name="picture" id="picture-file" accept="image/*">
+        {% if picture_max_size %}<span class="input-group-text">{{ _('max. %(size)s', size=picture_max_size|filesizeformat(true)) }}</span>{% endif %}
+        <button class="btn btn-primary" type="submit" name="action" value="upload" id="picture-upload">{{ _('Upload') }}</button>
+        {% if picture %}<button class="btn btn-outline-danger" type="submit" name="action" value="delete">{{ _('Delete') }}</button>{% endif %}
+      </div>
+    </form>
+    <div id="picture-error" class="text-danger mb-3" hidden></div>
+    <script src="{{ static('js/picture.js') }}"></script>
+  {% endif %}
+
+  <table class="table table-sm">
+    <thead><tr><th>{{ _('Claim') }}</th><th>{{ _('Value') }}</th></tr></thead>
+    <tbody>
+    {% for key, value in claims|dictsort %}
+      <tr>
+        <td><code>{{ key }}</code></td>
+        <td>
+          {% if is_http_url(value) %}<a href="{{ value }}">{{ value }}</a>
+          {% elif value is mapping or (value is iterable and value is not string) %}<pre class="mb-0"><code>{{ value|pretty_json }}</code></pre>
+          {% else %}{{ value }}{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

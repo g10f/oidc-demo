@@ -1,0 +1,48 @@
+[
+{
+    "model": "relying_party.identityprovider",
+    "pk": 1,
+    "fields": {
+        "name": "G10F",
+        "issuer": "https://sso.g10f.de",
+        "is_active": true,
+        "order": 0,
+        "home_uri": "https://sso.g10f.de/",
+        "strong_acr_values": "2",
+        "authorization_endpoint": "https://sso.g10f.de/oauth2/authorize/",
+        "token_endpoint": "https://sso.g10f.de/oauth2/token/",
+        "userinfo_endpoint": "https://sso.g10f.de/oauth2/userinfo/",
+        "jwks_uri": "https://sso.g10f.de/oauth2/jwks/",
+        "end_session_endpoint": "https://sso.g10f.de/accounts/logout/",
+        "check_session_iframe": "https://sso.g10f.de/oauth2/session/",
+        "profile_uri": "https://sso.g10f.de/accounts/me/",
+        "picture_endpoint": "https://sso.g10f.de/api/v2/users/me/picture/",
+        "user_navigation_uri": "https://sso.g10f.de/api/v2/users/me/navigation/"
+    }
+},
+{
+    "model": "relying_party.client",
+    "pk": 1,
+    "fields": {
+        "identity_provider": 1,
+        "name": "",
+        "flow": "code",
+        "client_id": "15b433a98e9b466685594aaf9323564a",
+        "scope": "openid profile email offline_access address phone picture",
+        "roles_claim": "roles",
+        "session_management": true
+    }
+},
+{
+    "model": "relying_party.client",
+    "pk": 2,
+    "fields": {
+        "identity_provider": 1,
+        "name": "implicit",
+        "flow": "id_token token",
+        "client_id": "ed88076c35aa4a2c8f1ad74ac29c4f37",
+        "scope": "openid profile email picture",
+        "roles_claim": "roles"
+    }
+}
+]

@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Session check</title></head>
+<body data-client-id="{{ client.client_id }}" data-session-state="{{ session_state }}"
+      data-op-origin="{{ op_origin }}" data-check-url="{{ check_url }}"
+      data-recently-checked="{{ 'true' if recently_checked else 'false' }}"
+      data-stop-url="{{ url('relying_party:session_iframe') }}" data-csrf-token="{{ csrf_token }}">
+<script src="{{ static('js/session-iframe.js') }}"></script>
+</body>
+</html>

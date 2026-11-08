@@ -1,0 +1,59 @@
+{# The breadcrumb of a page below the start page, like in the g10f SSO #}
+{% macro breadcrumb(title) %}
+  <ol class="breadcrumb">
+    <li><a href="{{ url('relying_party:home') }}">{{ _('Home') }}</a></li>
+    <li class="active">{{ title }}</li>
+  </ol>
+{% endmacro %}
+
+{% macro checks_table(checks) %}
+  <table class="table table-sm">
+    <tbody>
+    {% for item in checks %}
+      <tr>
+        <td>{% if item.result == 'ok' %}<i class="bi bi-check-circle text-success"></i>{% else %}<i class="bi bi-exclamation-triangle text-warning"></i>{% endif %}</td>
+        <td><code>{{ item.name }}</code></td>
+        <td>{{ item.detail }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% endmacro %}
+
+{# The claims that are seconds since the epoch (RFC 7519 4.1, OpenID Connect Core 2) #}
+{% set time_claims = ['exp', 'iat', 'nbf', 'auth_time', 'updated_at'] %}
+
+{# A token folded in, with a button that copies it (static/js/copy.js) #}
+{% macro raw_token(raw) %}
+  <details class="mb-2">
+    <summary>{{ _('Raw token') }}
+      <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-copy="{{ raw }}"
+              title="{{ _('Copy the token') }}">
+        <i class="bi bi-clipboard"></i> {{ _('Copy') }}</button>
+    </summary>
+    <pre class="text-break" style="white-space: pre-wrap"><code>{{ raw }}</code></pre>
+  </details>
+{% endmacro %}
+
+{% macro jwt_block(title, raw, claims) %}
+  {% if title %}<h3 class="h5">{{ title }}</h3>{% endif %}
+  {{ raw_token(raw) }}
+  {# jwt.io reads the token from the fragment, which the browser does not send to their server. #}
+  <p><a href="https://www.jwt.io/#token={{ raw|urlencode }}" target="_blank" rel="noopener noreferrer">
+    <i class="bi bi-box-arrow-up-right"></i> {{ _('Decode on jwt.io') }}</a></p>
+  <table class="table table-sm">
+    <thead><tr><th>{{ _('Claim') }}</th><th>{{ _('Value') }}</th></tr></thead>
+    <tbody>
+    {% for key, value in claims|dictsort %}
+      <tr>
+        <td><code>{{ key }}</code></td>
+        <td>
+          {% if key in time_claims and value is number %}{{ value|datetime }} <span class="text-body-secondary">({{ value }})</span>
+          {% elif value is mapping or (value is iterable and value is not string) %}<pre class="mb-0"><code>{{ value|pretty_json }}</code></pre>
+          {% else %}{{ value }}{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+{% endmacro %}

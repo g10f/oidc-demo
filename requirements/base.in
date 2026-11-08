@@ -1,12 +1,11 @@
 # Direct dependencies of the app. base.txt is generated from this file with all
 # transitive dependencies pinned: pip-compile requirements/base.in
 cryptography
-django==5.2.19
+django==6.1.3
 dj-database-url
 gunicorn
-pillow
+jinja2
 psycopg[c]
 pyjwt
 requests
-sorl-thumbnail
 whitenoise

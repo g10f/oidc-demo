@@ -16,7 +16,7 @@ cryptography==50.0.2
     # via -r requirements/base.in
 dj-database-url==3.1.2
     # via -r requirements/base.in
-django==5.2.19
+django==6.1.3
     # via
     #   -r requirements/base.in
     #   dj-database-url
@@ -24,8 +24,10 @@ gunicorn==26.2.0
     # via -r requirements/base.in
 idna==3.20
     # via requests
-pillow==13.0.0
+jinja2==3.1.6
     # via -r requirements/base.in
+markupsafe==3.0.4
+    # via jinja2
 psycopg==3.3.8
     # via -r requirements/base.in
 psycopg-c==3.3.8
@@ -35,8 +37,6 @@ pycparser==3.12
 pyjwt==2.15.1
     # via -r requirements/base.in
 requests==2.34.2
-    # via -r requirements/base.in
-sorl-thumbnail==13.4.0
     # via -r requirements/base.in
 sqlparse==0.6.1
     # via django

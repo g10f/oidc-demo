@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "macros.html" import breadcrumb %}
+{% block title %}{{ _('Log in') }} | OIDC Demo{% endblock %}
+{% block breadcrumb %}{{ breadcrumb(_('Log in')) }}{% endblock %}
+{% block content %}
+  <h1>{{ _('Log in') }}</h1>
+  <p>{{ _('Authorization code flow with PKCE (OpenID Connect Core 3.1, RFC 7636). Choose an identity provider:') }}</p>
+  {%- set login, login_client = current_login(request) %}
+  {% for client in clients %}
+    {# The client of the current login is green, a click logs in again with it. #}
+    <p><a class="btn {{ 'btn-success' if client == login_client else 'btn-primary' }}" href="{{ url('relying_party:start_login', args=[client.pk]) }}{% if next %}?next={{ next|urlencode }}{% endif %}"
+          title="client_id {{ client.client_id }}, scope {{ client.scope }}">
+      <i class="bi bi-{{ 'person-check' if client == login_client else 'person' }}"></i> {{ _('Log in with %(client)s', client=client) }}</a>
+      {% if client == login_client %}<span class="text-body-secondary">{{ _('you are logged in with this client') }}</span>{% endif %}</p>
+  {% else %}
+    <p>{% trans trimmed url=url('admin:index') %}No identity provider is configured yet, add one in the
+      <a href="{{ url }}">administration</a>.{% endtrans %}</p>
+  {% endfor %}
+{% endblock %}

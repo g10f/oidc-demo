@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+{%- set login, login_client = current_login(request) %}
+<html lang="{{ request.LANGUAGE_CODE }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="g10f">
+  <title>{% block title %}OIDC Demo{% endblock %}</title>
+  {# The icons of the g10f SSO, the key in the navigation bar #}
+  <link rel="apple-touch-icon" href="{{ static('root/apple-touch-icon.png') }}" sizes="180x180">
+  <link rel="icon" href="{{ static('root/favicon-32x32.png') }}" sizes="32x32" type="image/png">
+  <link rel="icon" href="{{ static('root/favicon-16x16.png') }}" sizes="16x16" type="image/png">
+  <link rel="icon" href="{{ static('root/favicon.ico') }}">
+  <link rel="stylesheet" href="{{ static('css/main.min.css') }}">
+  <link rel="stylesheet" href="{{ static('font/bootstrap-icons.min.css') }}">
+  <script src="{{ static('js/theme.js') }}"></script>
+  <script src="{{ static('js/vendor/bootstrap.bundle.min.js') }}" defer></script>
+  <script src="{{ static('js/copy.js') }}" defer></script>
+  {% if enable_plausible %}
+    <script defer data-domain="{{ domain }}" src="/js/plausible-script.js"></script>
+  {% endif %}
+  {% block extrahead %}{% endblock %}
+</head>
+<body>
+{#
+  The same navigation bar as in the g10f SSO and the other apps connected to it (sso/templates/include/
+  global_navigation.html): the identity provider on the left, the applications of the user from the navigation API,
+  the profile on the right. Without navigation API the same layout with the user info of this demo.
+#}
+{%- set navigation = user_navigation(request) %}
+{%- set apps = navigation.apps if navigation else [] %}
+{%- set idp_home = login_client.identity_provider.home_uri if login_client else '' %}
+{%- set strong = login_client and is_strong_authentication(login, login_client.identity_provider) %}
+<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-brand">
+  <div class="container-xxl">
+    <a class="navbar-brand" href="{{ idp_home or url('relying_party:home') }}">
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="32" fill="currentColor" class="bi bi-key" viewBox="0 0 16 16">
+        <path d="M0 8a4 4 0 0 1 7.465-2H14a.5.5 0 0 1 .354.146l1.5 1.5a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0L13 9.207l-.646.647a.5.5 0 0 1-.708 0L11 9.207l-.646.647a.5.5 0 0 1-.708 0L9 9.207l-.646.647A.5.5 0 0 1 8 10h-.535A4 4 0 0 1 0 8zm4-3a3 3 0 1 0 2.712 4.285A.5.5 0 0 1 7.163 9h.63l.853-.854a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.793-.793-1-1h-6.63a.5.5 0 0 1-.451-.285A3 3 0 0 0 4 5z"/>
+        <path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+      </svg>
+      {% if login_client %}{{ login_client.identity_provider }}{% else %}OIDC Demo{% endif %}
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+            aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto mb-2 mb-md-0">
+        {% for app in (apps if apps|length < 5 else apps[:3]) %}
+          <li class="nav-item"><a class="nav-link" href="{{ app.href }}">{{ app.title }}</a></li>
+        {% endfor %}
+        {% if apps|length >= 5 %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
+               aria-expanded="false">{{ _('More') }}</a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              {% for app in apps[3:] %}<li><a class="dropdown-item" href="{{ app.href }}">{{ app.title }}</a></li>{% endfor %}
+            </ul>
+          </li>
+        {% endif %}
+      </ul>
+      <ul class="navbar-nav">
+        {% if request.user.is_authenticated %}
+          <li class="nav-item">
+            {% if navigation and navigation.profile %}
+              <a class="nav-link" href="{{ navigation.profile.href }}">
+                {% if navigation.picture %}
+                  <img class="rounded-circle g10f-icon-user" src="{{ navigation.picture }}" width="30" height="30" alt="">
+                {% else %}
+                  <i class="bi bi-person-circle"></i>
+                {% endif %}
+                {{ navigation.profile.title }}{% if strong %} <sup><i class="bi bi-shield-lock" title="{{ _('Strong authenticated') }}"></i></sup>{% endif %}</a>
+            {% else %}
+              <a class="nav-link" href="{{ url('relying_party:userinfo') }}"><i class="bi bi-person-circle"></i> {{ request.user }}{% if strong %} <sup><i class="bi bi-shield-lock" title="{{ _('Strong authenticated') }}"></i></sup>{% endif %}</a>
+            {% endif %}
+          </li>
+          <li class="nav-item">
+            {# The logout of this demo, it also ends the session here (RP-Initiated Logout) #}
+            <form method="post" action="{{ url('relying_party:logout') }}">{{ csrf_input }}
+              <button class="nav-link btn btn-link" type="submit"><i class="bi bi-box-arrow-left"></i> {{ _('Log out') }}</button>
+            </form>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url('relying_party:login') }}"><i class="bi bi-box-arrow-in-right"></i> {{ _('Log in') }}</a>
+          </li>
+        {% endif %}
+        <li class="nav-item">
+          <a href="#" class="nav-link theme-toggle" aria-label="{{ _('Dark mode toggle') }}">
+            <i class="theme-icon-when-light bi bi-sun-fill"></i>
+            <i class="theme-icon-when-dark bi bi-moon-stars-fill"></i>
+            <i class="theme-icon-when-auto bi bi-circle-half"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container-xxl">
+  <nav aria-label="breadcrumb">{% block breadcrumb %}{% endblock %}</nav>
+  <main>
+    <aside>
+      {#- The left navigation like in the g10f SSO (sso/templates/include/_sidebar.html), only top level entries #}
+      {%- macro item(href, icon, label) %}
+        <li><a class="nav-link navbar-light{% if request.path == href %} active{% endif %}" href="{{ href }}"><i class="bi bi-{{ icon }}"></i>&nbsp;{{ label }}</a></li>
+      {%- endmacro %}
+      <ul class="sidebar nav nav-pills flex-column mb-3">
+        {{ item(url('relying_party:home'), 'house', _('Home')) }}
+        {{ item(url('relying_party:login'), 'shield-check', _('Code flow (web, SPA, native)')) }}
+        {{ item(url('relying_party:device'), 'tv', _('Device flow (TV, no browser)')) }}
+        {{ item(url('relying_party:implicit'), 'filetype-js', _('Implicit flow (legacy SPA)')) }}
+        {{ item(url('relying_party:tokens'), 'key', _('Tokens')) }}
+        {{ item(url('relying_party:userinfo'), 'person', _('User info')) }}
+        {% if login_client and login_client.identity_provider.profile_uri %}
+          {{ item(url('relying_party:profile'), 'person-gear', _('Profile at %(provider)s', provider=login_client.identity_provider)) }}
+        {% endif %}
+        {% if request.user.is_staff %}
+          {{ item(url('admin:index'), 'wrench', _('Administration')) }}
+        {% endif %}
+      </ul>
+    </aside>
+    <section>
+      {% for message in get_messages(request) %}
+        <div class="alert alert-{{ 'danger' if message.tags == 'error' else message.tags }}" role="alert">{{ message }}</div>
+      {% endfor %}
+      {% block content %}{% endblock %}
+    </section>
+  </main>
+  <footer class="footer mt-auto">
+    <hr>
+    <ul class="list-inline text-body-secondary">
+      <li class="list-inline-item"><a href="{{ about_url }}">{{ _('About us') }}</a></li>
+      <li class="list-inline-item">{{ _('Version %(version)s', version=version) }}</li>
+    </ul>
+  </footer>
+</div>
+{# Session Management 1.0: the iframe of the identity provider (op) and the one of this site (rp), which asks it #}
+{% if login_client and login_client.session_management and login_client.identity_provider.check_session_iframe and login.session_state and not login.session_checks_stopped %}
+  <iframe title="op" class="hidden" id="op" src="{{ login_client.identity_provider.check_session_iframe }}"></iframe>
+  <iframe title="rp" class="hidden" id="rp" src="{{ url('relying_party:session_iframe') }}"></iframe>
+{% endif %}
+</body>
+</html>

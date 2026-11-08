@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "macros.html" import breadcrumb %}
+{% block title %}{{ _('Device flow') }} | OIDC Demo{% endblock %}
+{% block breadcrumb %}{{ breadcrumb(_('Device flow')) }}{% endblock %}
+{% block content %}
+  <h1>{{ _('Log in on a device') }}</h1>
+  <p>{% trans trimmed %}The device authorization grant (RFC 8628) is for devices without a browser or keyboard, like a
+    TV: the device shows a code, you log in with it on your phone or computer, and the device asks the identity
+    provider until the login is finished.{% endtrans %}</p>
+  {% if device %}
+    <div class="card mb-3" id="device" data-poll-url="{{ url('relying_party:device_poll') }}"
+         data-interval="{{ device.interval }}" data-csrf-token="{{ csrf_token }}">
+      <div class="card-body">
+        <p>{% trans trimmed url=device.verification_uri %}Open <a href="{{ url }}" target="_blank" rel="noopener">{{ url }}</a>
+          and enter the code{% endtrans %}</p>
+        <p class="display-6"><code>{{ device.user_code }}</code></p>
+        {% if is_http_url(device.verification_uri_complete) %}
+          <p>{% trans trimmed url=device.verification_uri_complete %}Or open <a href="{{ url }}" target="_blank"
+            rel="noopener">this link</a>, which already contains the code.{% endtrans %}</p>
+        {% endif %}
+        <p id="device-status" class="text-body-secondary">{{ _('Waiting for the login, the code expires at %(time)s.', time=device.expires_at|datetime) }}</p>
+        <form method="post" action="{{ url('relying_party:device_cancel') }}">{{ csrf_input }}
+          <button class="btn btn-outline-secondary" type="submit">{{ _('Cancel') }}</button>
+        </form>
+      </div>
+    </div>
+    <script src="{{ static('js/device.js') }}"></script>
+  {% else %}
+    {%- set login, login_client = current_login(request) %}
+    {% for client in clients %}
+      <form method="post" action="{{ url('relying_party:device_start', args=[client.pk]) }}" class="mb-2">{{ csrf_input }}
+        <button class="btn {{ 'btn-success' if client == login_client else 'btn-primary' }}" type="submit"><i class="bi bi-tv"></i> {{ _('Start with %(client)s', client=client) }}</button>
+        {% if client == login_client %}<span class="text-body-secondary">{{ _('you are logged in with this client') }}</span>{% endif %}
+      </form>
+    {% else %}
+      <p>{{ _('No client for the device flow is configured.') }}</p>
+    {% endfor %}
+  {% endif %}
+{% endblock %}

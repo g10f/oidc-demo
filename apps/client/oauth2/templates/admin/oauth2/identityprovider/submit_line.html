@@ -1,9 +1,0 @@
-{% extends "admin/submit_line.html" %}
-{% load i18n %}
-
-<div class="submit-row">
-{% block submit-row %}
-  <input type="button" value="{% trans 'Complete from openid provider' %}" name="openid-configuration" />
-  {{ block.super }}
-{% endblock %}
-</div>

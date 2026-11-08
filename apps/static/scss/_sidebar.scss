@@ -1,0 +1,21 @@
+// The left navigation like in the g10f SSO (sso/static/scss/_sidebar.scss), only the top level entries: the demo has
+// no sub menus, so the styles for the collapsible groups are left out.
+.sidebar {
+  background-color: rgba(var(--bs-brand-light-rgb), .05);
+  border-radius: .25rem;
+
+  a {
+    color: var(--#{$prefix}body-color);
+
+    &:hover,
+    &:focus {
+      color: $navbar-light-brand-hover-color;
+    }
+
+    &.active.nav-link {
+      font-weight: bold;
+      color: $navbar-light-brand-hover-color;
+      background: none;
+    }
+  }
+}

@@ -1,39 +1,15 @@
-version: "3.9"
+# Local test of the image with the database on the host (see README.md, Development).
 services:
   web:
     network_mode: "host"
     build:
       context: .
-    ports:
-      - 8000:8000
-    volumes:
-      - media_data:/opt/g10f/oidc-demo/htdocs/media
     environment:
-      - DATABASE_URL=postgres://client:client@localhost:5432/client
+      - DATABASE_URL=postgres://oidc_demo:oidc_demo@localhost:5432/oidc_demo
       - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY to a long random value}
-      - DJANGO_SUPERUSER_PASSWORD=admin
       - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_EMAIL=admin@example.com
+      - DJANGO_SUPERUSER_PASSWORD=admin
       - DJANGO_MIGRATE=on
       - DJANGO_CREATE_SUPERUSER=on
       - DJANGO_LOAD_INITIAL_DATA=on
-#    depends_on:
-#      db:
-#         condition: service_healthy
-#  db:
-#      image: postgres:14.5-alpine
-#      volumes:
-#        - postgres_data:/var/lib/postgresql/data/
-#      expose:
-#        - 5432
-#      environment:
-#        - POSTGRES_USER=client
-#        - POSTGRES_PASSWORD=sso
-#        - POSTGRES_DB=sso
-#      healthcheck:
-#        test: ["CMD-SHELL", "pg_isready -U sso"]
-#        interval: 5s
-#        timeout: 5s
-#        retries: 5
-volumes:
-#  postgres_data: {}
-  media_data: {}

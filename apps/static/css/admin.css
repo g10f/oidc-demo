@@ -1,0 +1,25 @@
+/* Wider fields in the admin: the defaults (20em, 30em for urls) are too narrow for scopes, uris and JSON. */
+.vTextField, .vURLField {
+    width: 40em;
+    max-width: 100%;
+}
+
+textarea.vLargeTextField {
+    width: 40em;
+    max-width: 100%;
+}
+
+/* the URIs to register on the change page of a client */
+.registration-uris code {
+    margin-right: 0.5em;
+}
+
+/* the button below the issuer of an identity provider */
+.load-discovery {
+    margin-top: 0.75em;
+}
+
+.load-discovery .button {
+    padding: 0.6em 1.2em;
+    font-size: 0.95rem;
+}

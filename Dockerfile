@@ -42,7 +42,7 @@ RUN mkdir -p /opt/g10f/$PROJ_NAME/htdocs/media /opt/g10f/$PROJ_NAME/htdocs/stati
 WORKDIR /opt/g10f/$PROJ_NAME/apps
 COPY apps .
 
-ENV DJANGO_SETTINGS_MODULE=client.settings
+ENV DJANGO_SETTINGS_MODULE=the_site.settings
 
 USER $USERNAME
 # Some settings refuse to start without SECRET_KEY; collectstatic doesn't use it, so a dummy value is enough.
@@ -56,5 +56,5 @@ ENTRYPOINT ["./docker-entrypoint.sh"]
 # command, and a deployment that does know its proxy can pin it to an address or network.
 ENV FORWARDED_ALLOW_IPS="*"
 # Start gunicorn
-CMD ["gunicorn", "client.wsgi:application", "-b", "0.0.0.0:8000"]
+CMD ["gunicorn", "the_site.wsgi:application", "-b", "0.0.0.0:8000"]
 EXPOSE 8000

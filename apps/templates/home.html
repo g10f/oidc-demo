@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block breadcrumb %}<ol class="breadcrumb"><li class="active">{{ _('Home') }}</li></ol>{% endblock %}
+{% block content %}
+  <h1>{{ _('OpenID Connect Demo') }}</h1>
+  <p>{% trans trimmed %}This site is an OpenID Connect relying party. It logs you in at an identity provider and shows
+    what it gets back and how it checks it: the ID token, the access token, the user info and every check of the
+    specs.{% endtrans %}</p>
+  <ul>
+    <li>{% trans trimmed url=url('relying_party:login') %}<a href="{{ url }}">Log in</a> with the authorization code
+      flow and PKCE, the flow for web, single page and native applications.{% endtrans %}</li>
+    <li>{% trans trimmed url=url('relying_party:device') %}<a href="{{ url }}">Log in on a device</a> without browser
+      or keyboard (device authorization grant, RFC 8628).{% endtrans %}</li>
+    <li>{% trans trimmed url=url('relying_party:implicit') %}The <a href="{{ url }}">implicit flow</a> of older
+      JavaScript applications, for comparison.{% endtrans %}</li>
+    <li>{% trans trimmed tokens=url('relying_party:tokens'), userinfo=url('relying_party:userinfo') %}After the login:
+      the <a href="{{ tokens }}">tokens</a> and the <a href="{{ userinfo }}">user info</a>.{% endtrans %}</li>
+  </ul>
+  <p>{% trans trimmed %}The code is on <a href="https://github.com/g10f/oidc-demo">GitHub</a>.{% endtrans %}</p>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "admin/change_form.html" %}
+
+{% block form_top %}
+  <fieldset class="module aligned registration-uris">
+    <h2>URIs to register at the identity provider</h2>
+    {% for label, uri in registration_uris %}
+      <div class="form-row">
+        <label>{{ label }}:</label> <code>{{ uri }}</code>
+        <button type="button" class="button" data-copy="{{ uri }}">Copy</button>
+      </div>
+    {% endfor %}
+    <div class="form-row">A client with its own redirect URI uses that one instead of the code flow callback.</div>
+  </fieldset>
+{% endblock %}

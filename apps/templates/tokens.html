@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% from "macros.html" import breadcrumb, checks_table, jwt_block, raw_token %}
+{% block title %}{{ _('Tokens') }} | OIDC Demo{% endblock %}
+{% block breadcrumb %}{{ breadcrumb(_('Tokens')) }}{% endblock %}
+{% block content %}
+  <h1>{{ _('Tokens') }}</h1>
+  <p>{% trans trimmed grant=token_set.grant_type, client=client, time=token_set.received_at|datetime %}From the {{ grant }}
+    grant of {{ client }} at {{ time }}. The tokens are only kept in your session, they are gone after the
+    logout.{% endtrans %}</p>
+
+  <h2 class="h4">{{ _('Checks') }}</h2>
+  {{ checks_table(token_set.checks) }}
+
+  {% if token_set.id_token %}
+    {{ jwt_block(_('ID token'), token_set.id_token, token_set.id_token_claims) }}
+  {% endif %}
+
+  <h3 class="h5">{{ _('Access token') }}</h3>
+  <p>
+    {% if token_set.expires_at %}
+      {% if expired %}<span class="badge text-bg-warning">{{ _('expired') }}</span>{% endif %}
+      {{ _('Expires at %(time)s.', time=token_set.expires_at|datetime) }}
+    {% endif %}
+    {{ _('Scope:') }} <code>{{ token_set.response.scope or client.scope }}</code>
+  </p>
+  {% if access_token.opaque %}
+    <p>{{ _('The access token is no JWT. For the client it is opaque anyway: only the API it is meant for checks it.') }}</p>
+    {{ raw_token(access_token.raw) }}
+  {% else %}
+    <p>{{ _('A JWT, decoded without checking the signature. A client must not rely on its content, it is meant for the API.') }}</p>
+    {{ jwt_block('', access_token.raw, access_token.claims) }}
+    {% if access_token.api_result %}
+      <div class="alert alert-success">{{ access_token.api_result }}</div>
+    {% else %}
+      <div class="alert alert-secondary">{% trans trimmed url=url('relying_party:api_test'), reason=access_token.api_error %}The
+        API of this demo (<code>{{ url }}</code>) would reject it: {{ reason }}{% endtrans %}</div>
+    {% endif %}
+  {% endif %}
+
+  <h3 class="h5">{{ _('Refresh token') }}</h3>
+  {% if token_set.refresh_token %}
+    {{ raw_token(token_set.refresh_token) }}
+    <form method="post" action="{{ url('relying_party:refresh_tokens') }}">{{ csrf_input }}
+      <button class="btn btn-primary" type="submit"><i class="bi bi-arrow-repeat"></i> {{ _('Refresh the tokens') }}</button>
+    </form>
+  {% else %}
+    <p>{% trans trimmed %}There is no refresh token. Most identity providers only issue one for the scope
+      <code>offline_access</code>.{% endtrans %}</p>
+  {% endif %}
+
+  <h2 class="h4 mt-4">{{ _('Token response') }}</h2>
+  <pre><code>{{ token_set.response|pretty_json }}</code></pre>
+
+  {% if login.history %}
+    <h2 class="h4 mt-4">{{ _('Earlier token responses of this login') }}</h2>
+    {% for earlier in login.history %}
+      <details class="mb-2">
+        <summary>{{ _('%(grant)s at %(time)s', grant=earlier.grant_type, time=earlier.received_at|datetime) }}</summary>
+        {{ checks_table(earlier.checks) }}
+        <pre><code>{{ earlier.response|pretty_json }}</code></pre>
+      </details>
+    {% endfor %}
+  {% endif %}
+
+  <h2 class="h4 mt-4">{{ _('Session') }}</h2>
+  <table class="table table-sm">
+    <tr><td><code>iss</code></td><td>{{ login.iss }}</td></tr>
+    <tr><td><code>sub</code></td><td>{{ login.sub }}</td></tr>
+    <tr><td><code>sid</code></td><td>{{ login.sid or '' }}</td></tr>
+    <tr><td><code>session_state</code></td><td>{{ login.session_state or '' }}</td></tr>
+    <tr><td>{{ _('Session ends') }}</td><td>{% if login.ends_at %}{{ _('at %(time)s or when the browser is closed', time=login.ends_at|datetime) }}{% else %}{{ _('when the browser is closed') }}{% endif %}</td></tr>
+  </table>
+{% endblock %}

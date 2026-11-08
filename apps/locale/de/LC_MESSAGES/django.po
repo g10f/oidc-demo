@@ -1,0 +1,389 @@
+# German translations of oidc-demo, see README.md for how to update them.
+msgid ""
+msgstr ""
+"Project-Id-Version:  oidc-demo\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-11-08 14:31+0100\n"
+"PO-Revision-Date: 2026-11-08 13:32+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: de\n"
+"Language-Team: de <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "Your session has expired, please log in again."
+msgstr "Ihre Sitzung ist abgelaufen, bitte melden Sie sich erneut an."
+
+msgid "Your session at the identity provider has ended, you are logged out."
+msgstr "Ihre Sitzung beim Identity Provider ist beendet, Sie sind abgemeldet."
+
+#, python-format
+msgid "Welcome %(user)s, you are logged in with %(provider)s."
+msgstr "Willkommen %(user)s, Sie sind mit %(provider)s angemeldet."
+
+msgid "You are logged out."
+msgstr "Sie sind abgemeldet."
+
+msgid "You are logged out, also at the identity provider."
+msgstr "Sie sind abgemeldet, auch beim Identity Provider."
+
+msgid ""
+"You are logged in with a password, there are no tokens. Log in with "
+"OpenID Connect."
+msgstr ""
+"Sie sind mit einem Passwort angemeldet, es gibt keine Tokens. Melden Sie "
+"sich mit OpenID Connect an."
+
+msgid "The tokens are refreshed."
+msgstr "Die Tokens sind erneuert."
+
+msgid "The picture is deleted."
+msgstr "Das Bild ist gelöscht."
+
+msgid "Please choose an image file."
+msgstr "Bitte wählen Sie eine Bilddatei aus."
+
+msgid "The image is larger than the identity provider accepts."
+msgstr "Das Bild ist größer, als der Identity Provider annimmt."
+
+msgid "The picture is uploaded."
+msgstr "Das Bild ist hochgeladen."
+
+msgid "More"
+msgstr "Mehr"
+
+msgid "Strong authenticated"
+msgstr "Stark authentifiziert"
+
+msgid "Log out"
+msgstr "Abmelden"
+
+msgid "Log in"
+msgstr "Anmelden"
+
+msgid "Dark mode toggle"
+msgstr "Dunkelmodus umschalten"
+
+msgid "Home"
+msgstr "Startseite"
+
+msgid "Code flow (web, SPA, native)"
+msgstr "Code Flow (Web, SPA, nativ)"
+
+msgid "Device flow (TV, no browser)"
+msgstr "Device Flow (TV, ohne Browser)"
+
+msgid "Implicit flow (legacy SPA)"
+msgstr "Implicit Flow (deprecated SPA)"
+
+msgid "Tokens"
+msgstr "Tokens"
+
+msgid "User info"
+msgstr "User-Info"
+
+#, python-format
+msgid "Profile at %(provider)s"
+msgstr "Profil bei %(provider)s"
+
+msgid "Administration"
+msgstr "Administration"
+
+msgid "About us"
+msgstr "Über uns"
+
+#, python-format
+msgid "Version %(version)s"
+msgstr "Version %(version)s"
+
+msgid "Device flow"
+msgstr "Device Flow"
+
+msgid "Log in on a device"
+msgstr "Auf einem Gerät anmelden"
+
+msgid ""
+"The device authorization grant (RFC 8628) is for devices without a "
+"browser or keyboard, like a TV: the device shows a code, you log in with "
+"it on your phone or computer, and the device asks the identity provider "
+"until the login is finished."
+msgstr ""
+"Der Device Authorization Grant (RFC 8628) ist für Geräte ohne Browser "
+"oder Tastatur, etwa einen Fernseher: Das Gerät zeigt einen Code, Sie "
+"melden sich damit auf Ihrem Telefon oder Computer an, und das Gerät fragt"
+" beim Identity Provider nach, bis die Anmeldung abgeschlossen ist."
+
+#, python-format
+msgid ""
+"Open <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\">%(url)s</a> "
+"and enter the code"
+msgstr ""
+"Öffnen Sie <a href=\"%(url)s\" target=\"_blank\" "
+"rel=\"noopener\">%(url)s</a> und geben Sie den Code ein"
+
+#, python-format
+msgid ""
+"Or open <a href=\"%(url)s\" target=\"_blank\" rel=\"noopener\">this "
+"link</a>, which already contains the code."
+msgstr ""
+"Oder öffnen Sie <a href=\"%(url)s\" target=\"_blank\" "
+"rel=\"noopener\">diesen Link</a>, der den Code schon enthält."
+
+#, python-format
+msgid "Waiting for the login, the code expires at %(time)s."
+msgstr "Warte auf die Anmeldung, der Code läuft um %(time)s ab."
+
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#, python-format
+msgid "Start with %(client)s"
+msgstr "Mit %(client)s starten"
+
+msgid "you are logged in with this client"
+msgstr "Sie sind mit diesem Client angemeldet"
+
+msgid "No client for the device flow is configured."
+msgstr "Für den Device Flow ist kein Client eingerichtet."
+
+msgid "Error"
+msgstr "Fehler"
+
+msgid "Login error"
+msgstr "Anmeldefehler"
+
+msgid "Log in again"
+msgstr "Erneut anmelden"
+
+msgid "OpenID Connect Demo"
+msgstr "OpenID Connect Demo"
+
+msgid ""
+"This site is an OpenID Connect relying party. It logs you in at an "
+"identity provider and shows what it gets back and how it checks it: the "
+"ID token, the access token, the user info and every check of the specs."
+msgstr ""
+"Diese Seite ist eine OpenID Connect Relying Party. Sie meldet Sie bei "
+"einem Identity Provider an und zeigt, was sie zurückbekommt und wie sie "
+"es prüft: das ID Token, das Access Token, die User-Info und jede Prüfung "
+"der Specs."
+
+#, python-format
+msgid ""
+"<a href=\"%(url)s\">Log in</a> with the authorization code flow and PKCE,"
+" the flow for web, single page and native applications."
+msgstr ""
+"<a href=\"%(url)s\">Anmelden</a> mit dem Authorization Code Flow und "
+"PKCE, dem Flow für Web-, Single-Page- und native Anwendungen."
+
+#, python-format
+msgid ""
+"<a href=\"%(url)s\">Log in on a device</a> without browser or keyboard "
+"(device authorization grant, RFC 8628)."
+msgstr ""
+"<a href=\"%(url)s\">Auf einem Gerät anmelden</a>, ohne Browser oder "
+"Tastatur (Device Authorization Grant, RFC 8628)."
+
+#, python-format
+msgid ""
+"The <a href=\"%(url)s\">implicit flow</a> of older JavaScript "
+"applications, for comparison."
+msgstr ""
+"Der <a href=\"%(url)s\">Implicit Flow</a> älterer JavaScript-Anwendungen,"
+" zum Vergleich."
+
+#, python-format
+msgid ""
+"After the login: the <a href=\"%(tokens)s\">tokens</a> and the <a "
+"href=\"%(userinfo)s\">user info</a>."
+msgstr ""
+"Nach der Anmeldung: die <a href=\"%(tokens)s\">Tokens</a> und die <a "
+"href=\"%(userinfo)s\">User-Info</a>."
+
+msgid "The code is on <a href=\"https://github.com/g10f/oidc-demo\">GitHub</a>."
+msgstr ""
+"Der Code liegt auf <a href=\"https://github.com/g10f/oidc-"
+"demo\">GitHub</a>."
+
+msgid "Implicit flow"
+msgstr "Implicit Flow"
+
+msgid "Implicit flow (legacy)"
+msgstr "Implicit Flow (deprecated)"
+
+msgid ""
+"The implicit flow is deprecated and SHOULD NOT be used (<a "
+"href=\"https://www.rfc-editor.org/rfc/rfc9700#section-2.1.2\">RFC 9700, "
+"2.1.2</a>). OAuth 2.1 removes it (<a "
+"href=\"https://datatracker.ietf.org/doc/html/draft-ietf-"
+"oauth-v2-1#section-10.1\">draft, 10.1</a>)."
+msgstr ""
+"Der Implicit Flow ist deprecated und SOLLTE NICHT verwendet werden (<a "
+"href=\"https://www.rfc-editor.org/rfc/rfc9700#section-2.1.2\">RFC 9700, "
+"2.1.2</a>). OAuth 2.1 streicht ihn (<a "
+"href=\"https://datatracker.ietf.org/doc/html/draft-ietf-"
+"oauth-v2-1#section-10.1\">Entwurf, 10.1</a>)."
+
+msgid "Checks"
+msgstr "Prüfungen"
+
+msgid "ID token"
+msgstr "ID Token"
+
+msgid "Access token"
+msgstr "Access Token"
+
+msgid ""
+"You are not logged in by this flow, the page only shows and checks the "
+"answer."
+msgstr ""
+"Dieser Flow meldet Sie nicht an, die Seite zeigt und prüft nur die "
+"Antwort."
+
+#, python-format
+msgid "%(flow)s with %(client)s"
+msgstr "%(flow)s mit %(client)s"
+
+msgid "No client for the implicit flow is configured."
+msgstr "Für den Implicit Flow ist kein Client eingerichtet."
+
+msgid ""
+"Authorization code flow with PKCE (OpenID Connect Core 3.1, RFC 7636). "
+"Choose an identity provider:"
+msgstr ""
+"Authorization Code Flow mit PKCE (OpenID Connect Core 3.1, RFC 7636). "
+"Wählen Sie einen Identity Provider:"
+
+#, python-format
+msgid "Log in with %(client)s"
+msgstr "Mit %(client)s anmelden"
+
+#, python-format
+msgid ""
+"No identity provider is configured yet, add one in the <a "
+"href=\"%(url)s\">administration</a>."
+msgstr ""
+"Es ist noch kein Identity Provider eingerichtet, legen Sie einen in der "
+"<a href=\"%(url)s\">Administration</a> an."
+
+msgid "Raw token"
+msgstr "Token"
+
+msgid "Copy the token"
+msgstr "Token kopieren"
+
+msgid "Copy"
+msgstr "Kopieren"
+
+msgid "Decode on jwt.io"
+msgstr "Auf jwt.io dekodieren"
+
+msgid "Claim"
+msgstr "Claim"
+
+msgid "Value"
+msgstr "Wert"
+
+#, python-format
+msgid ""
+"From the %(grant)s grant of %(client)s at %(time)s. The tokens are only "
+"kept in your session, they are gone after the logout."
+msgstr ""
+"Aus dem Grant %(grant)s von %(client)s um %(time)s. Die Tokens liegen nur"
+" in Ihrer Sitzung, nach dem Abmelden sind sie weg."
+
+msgid "expired"
+msgstr "abgelaufen"
+
+#, python-format
+msgid "Expires at %(time)s."
+msgstr "Läuft um %(time)s ab."
+
+msgid "Scope:"
+msgstr "Scope:"
+
+msgid ""
+"The access token is no JWT. For the client it is opaque anyway: only the "
+"API it is meant for checks it."
+msgstr ""
+"Das Access Token ist kein JWT. Für den Client ist es ohnehin "
+"undurchsichtig: Nur die API, für die es bestimmt ist, prüft es."
+
+msgid ""
+"A JWT, decoded without checking the signature. A client must not rely on "
+"its content, it is meant for the API."
+msgstr ""
+"Ein JWT, dekodiert ohne Prüfung der Signatur. Ein Client darf sich nicht "
+"auf seinen Inhalt verlassen, es ist für die API bestimmt."
+
+#, python-format
+msgid "The API of this demo (<code>%(url)s</code>) would reject it: %(reason)s"
+msgstr "Die API dieser Demo (<code>%(url)s</code>) würde es ablehnen: %(reason)s"
+
+msgid "Refresh token"
+msgstr "Refresh Token"
+
+msgid "Refresh the tokens"
+msgstr "Tokens erneuern"
+
+msgid ""
+"There is no refresh token. Most identity providers only issue one for the"
+" scope <code>offline_access</code>."
+msgstr ""
+"Es gibt kein Refresh Token. Die meisten Identity Provider geben es nur "
+"für den Scope <code>offline_access</code> aus."
+
+msgid "Token response"
+msgstr "Token-Antwort"
+
+msgid "Earlier token responses of this login"
+msgstr "Frühere Token-Antworten dieser Anmeldung"
+
+#, python-format
+msgid "%(grant)s at %(time)s"
+msgstr "%(grant)s um %(time)s"
+
+msgid "Session"
+msgstr "Sitzung"
+
+msgid "Session ends"
+msgstr "Sitzung endet"
+
+#, python-format
+msgid "at %(time)s or when the browser is closed"
+msgstr "um %(time)s oder wenn der Browser geschlossen wird"
+
+msgid "when the browser is closed"
+msgstr "wenn der Browser geschlossen wird"
+
+#, python-format
+msgid ""
+"The answer of the userinfo endpoint of %(provider)s to the access token "
+"(OpenID Connect Core 5.3)."
+msgstr ""
+"Die Antwort des Userinfo-Endpoints von %(provider)s auf das Access Token "
+"(OpenID Connect Core 5.3)."
+
+msgid "Picture of the user"
+msgstr "Bild des Benutzers"
+
+msgid ""
+"To upload a picture, the client must request the scope "
+"<code>picture</code>."
+msgstr ""
+"Zum Hochladen eines Bildes muss der Client den Scope <code>picture</code>"
+" anfordern."
+
+#, python-format
+msgid "max. %(size)s"
+msgstr "max. %(size)s"
+
+msgid "Upload"
+msgstr "Hochladen"
+
+msgid "Delete"
+msgstr "Löschen"
+

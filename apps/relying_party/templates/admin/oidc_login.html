@@ -1,0 +1,7 @@
+{% extends "admin/login.html" %}
+
+{% block content %}
+  <p><a class="button" href="{% url 'relying_party:login' %}?next={{ next|urlencode }}">Log in with OpenID Connect</a></p>
+  <p>Or with the password of a local user:</p>
+  {{ block.super }}
+{% endblock %}

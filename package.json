@@ -1,18 +1,17 @@
 {
   "name": "oidc-demo",
   "private": true,
-  "description": "Frontend assets of the OAuth2 / OpenID Connect sample client",
+  "description": "Frontend assets of the OpenID Connect demo",
   "author": "g10f",
   "license": "ISC",
   "scripts": {
     "build": "npm run css && npm run vendor",
     "css": "sass --load-path=node_modules --quiet-deps --silence-deprecation=import apps/static/scss/main.scss apps/static/css/main.css && sass --load-path=node_modules --quiet-deps --silence-deprecation=import --style=compressed --no-source-map apps/static/scss/main.scss apps/static/css/main.min.css",
-    "vendor": "cp node_modules/bootstrap/dist/js/bootstrap.bundle.min.js node_modules/bootstrap/dist/js/bootstrap.bundle.min.js.map node_modules/jquery/dist/jquery.min.js apps/static/js/vendor/ && cp node_modules/bootstrap-icons/font/bootstrap-icons.css node_modules/bootstrap-icons/font/bootstrap-icons.min.css apps/static/font/ && cp node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2 apps/static/font/fonts/"
+    "vendor": "cp node_modules/bootstrap/dist/js/bootstrap.bundle.min.js node_modules/bootstrap/dist/js/bootstrap.bundle.min.js.map apps/static/js/vendor/ && cp node_modules/bootstrap-icons/font/bootstrap-icons.css node_modules/bootstrap-icons/font/bootstrap-icons.min.css apps/static/font/ && cp node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2 apps/static/font/fonts/"
   },
   "dependencies": {
     "bootstrap": "^5.3.8",
-    "bootstrap-icons": "^1.13.2",
-    "jquery": "^4.0.0"
+    "bootstrap-icons": "^1.13.2"
   },
   "devDependencies": {
     "sass": "^1.107.1"
