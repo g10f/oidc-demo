@@ -42,7 +42,7 @@ Pages
 | `/oidc/profile/`             | redirect to the profile page of the identity provider                  |
 | `/oidc/logout/`              | RP-initiated logout (POST)                                             |
 | `/oidc/logged-out/`          | post logout redirect URI                                               |
-| `/oidc/initiate/`            | login initiated by the identity provider (Core 4)                      |
+| `/oidc/initiate/`            | login initiated by a third party, e.g. the identity provider (Core 4): `iss` (required) selects the identity provider, optional `login_hint` and `target_link_uri` (page after the login, only on this site) |
 | `/oidc/frontchannel-logout/` | front-channel logout URI, needs `iss` and `sid`                        |
 | `/oidc/backchannel-logout/`  | back-channel logout URI                                                |
 | `/oidc/session-iframe/`      | RP iframe of Session Management; a POST stops the checks for the login |
