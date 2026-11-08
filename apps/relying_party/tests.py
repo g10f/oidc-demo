@@ -675,16 +675,19 @@ class ReviewFindingsTest(DemoTestCase):
         response = self.callback_with(lambda request: self.token_response({'nonce': request['nonce']}))
         self.assertContains(response, 'signing_error', status_code=400)
 
-    def test_unknown_kid_reloads_the_keys_only_once_a_minute(self):
+    def test_rotated_key_is_found_right_after_a_reload(self):
+        # The conformance suite uses a new kid for every test, also within a minute.
         protocol.validate_id_token(self.client_config, sign(id_token_claims()))
+        self.fake.jwks = {'keys': [{**JWK, 'kid': 'key-2'}]}
+        protocol.validate_id_token(self.client_config, sign(id_token_claims(), headers={'kid': 'key-2'}))
+        self.fake.jwks = {'keys': [{**JWK, 'kid': 'key-3'}]}
+        protocol.validate_id_token(self.client_config, sign(id_token_claims(), headers={'kid': 'key-3'}))
+        self.assertEqual(self.fake.jwks_requests, 3)
+
+    def test_known_kid_uses_the_cache(self):
         for _ in range(3):
-            with self.assertRaises(ProtocolError):
-                protocol.validate_id_token(self.client_config, sign(id_token_claims(), headers={'kid': 'other'}))
+            protocol.validate_id_token(self.client_config, sign(id_token_claims()))
         self.assertEqual(self.fake.jwks_requests, 1)
-        # After the interval (here: an empty cache) the keys are loaded again.
-        cache.clear()
-        protocol.validate_id_token(self.client_config, sign(id_token_claims()))
-        self.assertEqual(self.fake.jwks_requests, 2)
 
     def test_token_without_kid(self):
         protocol.validate_id_token(self.client_config, jwt.encode(id_token_claims(), PRIVATE_KEY, algorithm='RS256'))

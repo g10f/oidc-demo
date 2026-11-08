@@ -102,15 +102,11 @@ def _load_jwks(identity_provider):
     if not isinstance(data, dict) or not isinstance(data.get('keys'), list):
         raise ProtocolError('signing_error', 'The JWKS has no list of keys.')
     cache.set(_jwks_cache_key(identity_provider), data, JWKS_CACHE_SECONDS)
-    cache.set(_jwks_cache_key(identity_provider) + '_reloaded', True, JWKS_RELOAD_INTERVAL)
     return data
 
 
 # The key type (RFC 7518 6.1) that each family of signature algorithms needs.
 KEY_TYPES = {'RS': 'RSA', 'PS': 'RSA', 'ES': 'EC', 'Ed': 'OKP'}
-# After a reload of the keys the next one is allowed only after this time. Otherwise every token with a made-up kid
-# (e.g. sent to the API without login) would make this site load the keys again and block a worker for that time.
-JWKS_RELOAD_INTERVAL = 60
 
 
 def _find_key(jwks, kid, alg):
@@ -147,9 +143,10 @@ def get_signing_key(identity_provider, kid, alg):
         raise ProtocolError('signing_error', 'The kid or alg of the token header is not a string.')
     jwks = cache.get(_jwks_cache_key(identity_provider))
     key = _find_key(jwks, kid, alg) if jwks else None
-    if key is None and (jwks is None or cache.add(_jwks_cache_key(identity_provider) + '_reloaded', True,
-                                                  JWKS_RELOAD_INTERVAL)):
-        # Unknown kid: the identity provider may have rotated its keys, load them once more.
+    if key is None:
+        # Not in the cache: the identity provider may have rotated its keys (Core 10.1.1), so they are loaded again.
+        # A made-up kid (e.g. a token sent to the API without login) also makes this site load them, which is
+        # accepted for a demo: it costs one request to the JWKS of the identity provider, no more.
         key = _find_key(_load_jwks(identity_provider), kid, alg)
     if key is None:
         # repr keeps line breaks of the kid out of the message and the log.
