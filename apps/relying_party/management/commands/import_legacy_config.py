@@ -1,8 +1,10 @@
 """
 Imports the identity providers, clients and API clients of oidc-demo 2.x into the data model of 3.x.
 
-The old database is exported with legacy_export.sql (next to this file), see its header and the README. The import
-is meant for the switch to 3.0 and can be removed once all instances are migrated.
+The old database is read in one of two ways (see the README, "Upgrade from 2.x"):
+- --from-database: the URL of the old database comes through stdin, the command runs legacy_export.sql (next to this
+  file) itself. migrate-legacy-config.sh uses it with kubectl exec, so no export file is written anywhere.
+- an export file: the JSON written by psql with legacy_export.sql.
 
 How the old fields are taken over:
 - Identity providers without issuer are skipped with their clients: they were plain OAuth2 providers (Facebook,
@@ -22,6 +24,10 @@ How the old fields are taken over:
   doesn't set it.
 """
 import json
+import sys
+from pathlib import Path
+
+import psycopg
 
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
@@ -33,6 +39,8 @@ FLOW_BY_LEGACY_TYPE = {
     'web': Client.FLOW_CODE,
     'javascript': Client.FLOW_IMPLICIT,
 }
+EXPORT_SQL = Path(__file__).with_name('legacy_export.sql')
+
 REASON_BY_SKIPPED_TYPE = {
     'native': 'native clients used the oob redirect URI, which is gone',
     'service': 'the client credentials grant is not part of the demo',
@@ -41,15 +49,26 @@ REASON_BY_SKIPPED_TYPE = {
 
 
 class Command(BaseCommand):
-    help = 'Imports the identity providers and clients of oidc-demo 2.x from the JSON written by legacy_export.sql.'
+    help = ('Imports the identity providers and clients of oidc-demo 2.x, from the JSON written by legacy_export.sql '
+            'or with --from-database directly from the 2.x database.')
 
     def add_arguments(self, parser):
-        parser.add_argument('export_file', help='JSON file written by legacy_export.sql')
+        parser.add_argument('export_file', nargs='?', help='JSON file written by legacy_export.sql')
+        parser.add_argument('--from-database', action='store_true',
+                            help='Reads the URL of the 2.x database from stdin and exports it with legacy_export.sql '
+                                 'directly, instead of reading an export file.')
         parser.add_argument('--dry-run', action='store_true',
                             help='Shows what would be imported and rolls the import back.')
 
     def handle(self, *args, **options):
-        data = self.read_export(options['export_file'])
+        if options['from_database'] and options['export_file']:
+            raise CommandError('Give either an export file or --from-database, not both.')
+        if options['from_database']:
+            data = self.read_database()
+        elif options['export_file']:
+            data = self.read_export(options['export_file'])
+        else:
+            raise CommandError('Give the export file written by legacy_export.sql, or --from-database.')
 
         # The import maps the old ids to new rows. Mixing it with existing rows (e.g. the fixture initial_data,
         # which the entrypoint loads with DJANGO_LOAD_INITIAL_DATA=on) would create duplicates or fail on the
@@ -80,10 +99,40 @@ class Command(BaseCommand):
                 data = json.load(f)
         except (OSError, ValueError) as e:
             raise CommandError(f'The export file {path} could not be read: {e}')
+        self.check_export(data, f'The export file {path}')
+        return data
+
+    def read_database(self):
+        # The URL contains the password of the old database. It comes through stdin and not as an argument or
+        # environment variable, so it shows up neither in the process list nor in the Kubernetes API.
+        database_url = sys.stdin.readline().strip()
+        if not database_url:
+            raise CommandError('--from-database expects the URL of the 2.x database on stdin, but stdin was empty.')
+        # libpq repeats the part of a URL it can't parse in its error message, which can be the password. So the URL
+        # is parsed first and that error is not shown.
+        try:
+            psycopg.conninfo.conninfo_to_dict(database_url)
+        except psycopg.ProgrammingError:
+            raise CommandError('The URL of the 2.x database on stdin could not be parsed (the error is not shown, it '
+                               'could contain the password). It must start with postgres:// or postgresql://, and '
+                               'special characters in the password must be percent-encoded.') from None
+        try:
+            # Without a timeout an unreachable database (wrong host, a network policy that drops the packets)
+            # would keep the command waiting for minutes without any message.
+            with psycopg.connect(database_url, connect_timeout=10) as connection:
+                # The old database is only read; read_only makes sure of it.
+                connection.read_only = True
+                data = connection.execute(EXPORT_SQL.read_text(encoding='utf-8')).fetchone()[0]
+        except psycopg.Error as e:
+            # The message of psycopg names host, port and user, but not the password.
+            raise CommandError(f'The 2.x database could not be read: {e}')
+        self.check_export(data, 'The 2.x database')
+        return data
+
+    def check_export(self, data, source):
         for key in ('identity_providers', 'clients', 'api_clients'):
             if not isinstance(data.get(key), list):
-                raise CommandError(f'The export file {path} has no list "{key}", it was not written by legacy_export.sql.')
-        return data
+                raise CommandError(f'{source} has no list "{key}", it was not written by legacy_export.sql.')
 
     def import_data(self, data):
         identity_providers = {}  # old id → new IdentityProvider

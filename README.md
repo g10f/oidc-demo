@@ -17,12 +17,14 @@ Layout
 | `apps/relying_party/models.py`      | identity providers, clients, API clients, user                  |
 | `apps/relying_party/protocol.py`    | the protocol steps, the only place that reads the protocol options |
 | `apps/relying_party/discovery.py`   | discovery document and signing keys (JWKS)                      |
+| `apps/relying_party/errors.py`      | protocol errors, shown on the error page                        |
 | `apps/relying_party/browser_session.py` | what is kept in the session: started logins, tokens          |
 | `apps/relying_party/users.py`       | claims → local user, roles → staff/superuser                    |
 | `apps/relying_party/api.py`         | the demo as API (resource server) with JWT access tokens        |
 | `apps/relying_party/views.py`       | the pages                                                       |
 | `apps/relying_party/middleware.py`  | end of the session after `session_max_age`                      |
 | `apps/relying_party/admin.py`       | admin, with the discovery button and the URIs to register       |
+| `apps/relying_party/management/`    | `import_legacy_config` (upgrade from 2.x), `user_count` (entrypoint) |
 | `apps/templates/`                   | Jinja2 templates of the pages (the admin uses Django templates) |
 
 Pages
@@ -99,6 +101,39 @@ Features of the g10f SSO, set at the identity provider:
   (RFC 8176) counts for any identity provider
 - `home_uri`: the name of the identity provider in the navigation bar links there
 
+OpenID conformance tests
+------------------------
+The demo passes these relying party test plans of the
+[OpenID Foundation conformance suite](https://www.certification.openid.net/) (it is not certified), all with
+`client_secret_basic` and plain authorization requests; the links show the published results:
+
+- [`oidcc-client-basic-certification-test-plan`](https://www.certification.openid.net/plan-detail.html?plan=1qzsZSmGudmnt&public=true):
+  authorization code flow (`idtoken-sig-none` is skipped by the suite: it only runs for clients registered for
+  unsigned ID tokens, which the demo doesn't accept)
+- [`oidcc-client-implicit-certification-test-plan`](https://www.certification.openid.net/plan-detail.html?plan=PWJRVoaeFMwW7&public=true):
+  implicit flow, `id_token` and `id_token token`
+- [`oidcc-client-back-channel-logout-rp-basic`](https://www.certification.openid.net/plan-detail.html?plan=qOlchjXIK6JTU&public=true):
+  RP-initiated logout with back-channel logout, including the rejection of invalid logout tokens
+- [`oidcc-client-rp-initiated-logout-rp-basic`](https://www.certification.openid.net/plan-detail.html?plan=Gk3X04A3mj9hp&public=true):
+  RP-initiated logout, including a wrong and a missing `state` on the way back (the suite requires a back- or
+  front-channel logout URI for it, the plan ran with back-channel logout)
+- [`oidcc-client-front-channel-logout-rp-basic`](https://www.certification.openid.net/plan-detail.html?plan=L4oefefzGgIQJ&public=true):
+  RP-initiated logout with front-channel logout; the result is "review" instead of "passed", because the suite can't
+  see whether the demo has logged out and leaves that to a screenshot checked by the certification team
+
+The response mode `form_post` is not supported on purpose: the answer is a cross-site POST, which doesn't carry the
+session cookie (`SameSite=Lax`). The plan for the login initiated by a third party has not been run yet.
+
+To run a plan, add an identity provider with the issuer of the plan
+(`https://www.certification.openid.net/test/a/<alias>/`, then the discovery button) and a client with the client id
+and secret of the plan. Notes:
+- The implicit flow needs https for its redirect URI, so it can't be tested against localhost.
+- The implicit plan tests `id_token` first and `id_token token` later: switch the flow of the client in between.
+- Most tests wait for the user info request: open the user info page after each login.
+- The suite requires an https `initiate_login_uri`.
+- Logout plans: set `end_session_endpoint` (discovery button and save) and turn on only the logout option of the
+  plan at the client.
+
 Configuration
 -------------
 | Variable                              | Default                                                     | Description                                   |
@@ -129,12 +164,23 @@ Upgrade from 2.x
 ----------------
 Version 3.0 has a new data model with a new initial migration. It needs a new, empty database: `migrate` refuses
 to run on the database of 2.x (`InconsistentMigrationHistory`). Keep the old database for a rollback and take the
-identity providers and clients over (users and tokens are not migrated, users are created again at their next login):
+identity providers and clients over (users and tokens are not migrated, users are created again at their next login).
+Start 3.x without `DJANGO_LOAD_INITIAL_DATA`, the import only runs on an empty configuration.
+
+In Kubernetes, `migrate-legacy-config.sh` does it with `kubectl exec` in the 3.x deployment, which must be able to
+reach the 2.x database. It asks for the URL of the old database (or takes it from `OLD_DATABASE_URL`) and passes it
+through stdin, so it ends up neither on a command line nor in a file. Without `--apply` it is a dry run:
+
+    ./migrate-legacy-config.sh --context <kube context> --namespace <namespace> [--deployment oidc-demo] \
+        [--container <name, when the pod has sidecars>]
+    ./migrate-legacy-config.sh --context <kube context> --namespace <namespace> --apply
+
+Without Kubernetes, export the old database with psql and import the file:
 
     # the export contains the client secrets: umask 077 makes the file readable only by you
     (umask 077; psql "$OLD_DATABASE_URL" --no-align --tuples-only \
         --file apps/relying_party/management/commands/legacy_export.sql > legacy.json)
-    # in the new instance, without initial_data (DJANGO_LOAD_INITIAL_DATA off); --dry-run shows the result first
+    # --dry-run shows the result first
     ./manage.py import_legacy_config legacy.json --dry-run
     ./manage.py import_legacy_config legacy.json
     rm legacy.json

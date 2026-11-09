@@ -1167,3 +1167,35 @@ class ImportLegacyConfigTest(TestCase):
         self.run_import(data)
         with self.assertRaisesMessage(CommandError, 'already contains identity providers'):
             self.run_import(data)
+
+    def test_export_file_or_from_database(self):
+        with self.assertRaisesMessage(CommandError, 'Give the export file'):
+            call_command('import_legacy_config', stdout=StringIO())
+        with self.assertRaisesMessage(CommandError, 'not both'):
+            call_command('import_legacy_config', 'legacy.json', '--from-database', stdout=StringIO())
+
+    def run_import_from_database(self, stdin, data=None):
+        connection = mock.MagicMock()
+        connection.__enter__.return_value.execute.return_value.fetchone.return_value = [data]
+        with mock.patch('sys.stdin', StringIO(stdin)), mock.patch('psycopg.connect', return_value=connection) as connect:
+            call_command('import_legacy_config', '--from-database', stdout=StringIO())
+        return connect
+
+    def test_from_database(self):
+        data = {'identity_providers': [self.legacy_identity_provider()], 'clients': [self.legacy_client()],
+                'api_clients': []}
+        connect = self.run_import_from_database('postgres://client:secret@db:5432/client\n', data)
+        connect.assert_called_once_with('postgres://client:secret@db:5432/client', connect_timeout=10)
+        self.assertTrue(connect.return_value.__enter__.return_value.read_only)
+        self.assertEqual(Client.objects.get().client_id, 'web-client')
+
+    def test_from_database_hides_the_password_of_a_broken_url(self):
+        # libpq would repeat the broken percent-encoded password in its error message.
+        with self.assertRaises(CommandError) as raised:
+            self.run_import_from_database('postgres://client:se%ZZcret@db/client\n')
+        self.assertNotIn('se%ZZcret', str(raised.exception))
+        # Django style schemes like psql:// are no libpq URLs.
+        with self.assertRaisesMessage(CommandError, 'must start with postgres:// or postgresql://'):
+            self.run_import_from_database('psql://client:secret@db/client\n')
+        with self.assertRaisesMessage(CommandError, 'stdin was empty'):
+            self.run_import_from_database('')

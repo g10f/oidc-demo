@@ -1,7 +1,8 @@
 -- Export of the configuration of oidc-demo 2.x (oauth-python-sample) as one JSON document, the input of
 -- `manage.py import_legacy_config`. Only the identity providers, clients and API clients are exported: users and
 -- tokens are not migrated, users are created again at their next login.
--- Usage (the output contains the client secrets, keep the file private):
+-- import_legacy_config --from-database runs this file itself (migrate-legacy-config.sh uses it in Kubernetes).
+-- Without it, export with psql (the output contains the client secrets, keep the file private):
 --   (umask 077; psql "$OLD_DATABASE_URL" --no-align --tuples-only --file legacy_export.sql > legacy.json)
 -- max_age is an interval in 2.x, it is exported as seconds so the import doesn't have to parse PostgreSQL intervals.
 select json_build_object(
