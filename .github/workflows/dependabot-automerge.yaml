@@ -1,0 +1,33 @@
+name: dependabot automerge
+
+# Merges Dependabot PRs where a broken update shows up before it does harm and nothing goes into the image without a
+# release: GitHub Actions and npm (minor and patch) and the patch updates of the Docker base image (dependabot.yml
+# proposes no other ones for it). Python packages and all major updates stay for a manual merge: they go into the
+# image and the CI has no tests. A merge to main deploys nothing, the CI only runs for release tags.
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    runs-on: ubuntu-latest
+    # Only PRs opened by Dependabot and not pushed to by anyone else.
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.actor == 'dependabot[bot]'
+    steps:
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v3.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge
+        if: >-
+          contains(fromJSON('["github_actions", "npm_and_yarn", "docker"]'), steps.metadata.outputs.package-ecosystem)
+          && steps.metadata.outputs.update-type != 'version-update:semver-major'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        # Merged right away: there are no required checks to wait for.
+        run: gh pr merge --merge "$PR_URL"

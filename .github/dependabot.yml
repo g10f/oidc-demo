@@ -1,16 +1,23 @@
 version: 2
+# cooldown: a new version is proposed only 7 days after its release. Compromised releases of actions and packages
+# were found and withdrawn within hours or days so far; the wait keeps them out, also with the automerge of
+# .github/workflows/dependabot-automerge.yaml.
 updates:
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 7
 
   # Maintain the frontend dependencies (Sass, Bootstrap, Bootstrap icons)
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
 
   # Maintain the Python packages: Dependabot updates requirements/*.in where a version is pinned there
   # and recompiles base.txt/dev.txt with pip-compile.
@@ -18,6 +25,8 @@ updates:
     directory: "/requirements"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     groups:
       # minor and patch updates in one PR per week, major updates one PR each
       python-minor-and-patch:
@@ -31,6 +40,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: "python"
         update-types:

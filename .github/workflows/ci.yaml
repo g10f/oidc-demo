@@ -8,10 +8,18 @@ on:
 env:
   IMAGE: ghcr.io/g10f/oidc-demo
 
+# The GITHUB_TOKEN only gets what each job needs. The third-party actions of the build and merge jobs can push the
+# image, but not change the repo (no commits, tags or PR approvals).
+permissions:
+  contents: read
+
 jobs:
   # Each platform is built natively on its own runner, without QEMU emulation. The images are pushed
   # without tag (by digest) and combined into one multi-platform image in the merge job.
   build:
+    permissions:
+      contents: read
+      packages: write
     strategy:
       matrix:
         include:
@@ -78,6 +86,9 @@ jobs:
           retention-days: 1
 
   merge:
+    permissions:
+      contents: read
+      packages: write
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -123,6 +134,7 @@ jobs:
   # Both are secrets, so their values are masked in the log. Without them (e.g. in a fork) nothing is deployed.
   deploy:
     needs: merge
+    permissions: {}
     runs-on: ubuntu-latest
     steps:
       - name: Start the deploy
