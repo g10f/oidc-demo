@@ -35,12 +35,9 @@ Pages
 | `/oidc/login/<client>/`      | starts the login with a client (code or implicit flow)                 |
 | `/oidc/callback/`            | redirect URI of the code flow                                          |
 | `/oidc/device/`              | device authorization grant (RFC 8628)                                  |
-| `/oidc/device/<client>/`, `/oidc/device/poll/`, `/oidc/device/cancel/` | start, poll and cancel of the device flow (POST) |
 | `/oidc/implicit/`            | implicit flow (legacy), also the redirect URI of the implicit clients  |
 | `/oidc/tokens/`              | tokens of the current login, the checks and the refresh                |
-| `/oidc/tokens/refresh/`      | refreshes the tokens (POST)                                            |
 | `/oidc/userinfo/`            | user info, with picture upload at the g10f SSO                         |
-| `/oidc/userinfo/picture/`    | uploads or deletes the picture at the g10f SSO (POST)                  |
 | `/oidc/profile/`             | redirect to the profile page of the identity provider                  |
 | `/oidc/logout/`              | RP-initiated logout (POST)                                             |
 | `/oidc/logged-out/`          | post logout redirect URI                                               |
@@ -51,7 +48,8 @@ Pages
 | `/api/v1/test/`              | API that accepts JWT access tokens (`Authorization: Bearer`)           |
 | `/admin/`                    | Django admin, login with OpenID Connect or a local password            |
 
-The admin page of a client lists the URIs to register at the identity provider.
+The actions of the device, tokens and user info pages (start, poll and cancel, refresh, picture upload) are POSTs to
+URLs below the page. The admin page of a client lists the URIs to register at the identity provider.
 
 What is checked
 ---------------
@@ -65,32 +63,31 @@ What is checked
 - logout token: signature, `iss`, `aud`, `events`, no `nonce`, `typ` if present, each `jti` only once
 - API: only the `Authorization` header, `typ` `at+jwt` (RFC 9068) unless turned off per API client
 
-Options of older identity providers (TLS verification off, access token in the userinfo query, PKCE off, the role
-check of the g10f SSO) are in the "Legacy" section of the admin. Password grant and the oob
-redirect URI are gone.
-
+Sessions and logout
+-------------------
 Tokens are not stored in tables: they are in the session (stored in the database) and gone after the logout.
 Expired sessions are not removed by Django itself, run `manage.py clearsessions` daily (cron or job).
 
 A session ends when the browser is closed (the cookie has no expiry date) and, if the client has `session_max_age`,
-at the latest that many seconds after the login. A silent login of Session Management starts that time again, as
-long as the identity provider confirms the session. The end is kept in the session on the server and checked on
-every request (`relying_party/middleware.py`). Django ends every session after 2 weeks (`SESSION_COOKIE_AGE`), a
-longer `session_max_age` has no effect.
+at the latest that many seconds after the login; the server checks it on every request (`relying_party/middleware.py`).
+A silent login of Session Management starts that time again. Django ends every session after 2 weeks
+(`SESSION_COOKIE_AGE`), a longer `session_max_age` has no effect.
 
-Session Management: if the OP iframe can't read its state (third-party cookies blocked, e.g. a demo on localhost
-with the identity provider on another site), it answers "changed" right after a silent login. The checks then stop
-for this login instead of reloading the page again and again.
+Session Management stops its checks for a login when the OP iframe can't read its state (third-party cookies
+blocked), instead of reloading the page again and again.
 
 The signing keys and the used `jti` of the logout tokens are kept in the memory of the process. The demo is meant
 to run as one process (one gunicorn worker, one replica); with more, a logout token could be used once per process.
 
-Staff and superuser status come from the roles claim (`roles_claim`, default `roles`) only for clients with
-`staff_roles` or `superuser_roles`; they are set at each login. Otherwise the status set in the admin stays.
-
-The admin of an identity provider has a button "Load from discovery document" below the issuer: it loads
-`<issuer>/.well-known/openid-configuration` on the server and replaces the endpoints in the form, nothing is saved
-until you save.
+Admin
+-----
+- "Load from discovery document" below the issuer of an identity provider loads
+  `<issuer>/.well-known/openid-configuration` on the server and replaces the endpoints in the form; nothing is saved
+  until you save.
+- Staff and superuser status come from the roles claim (`roles_claim`, default `roles`) only for clients with
+  `staff_roles` or `superuser_roles`; they are set at each login. Otherwise the status set in the admin stays.
+- Options of older identity providers (TLS verification off, access token in the userinfo query, PKCE off, the role
+  check of the g10f SSO) are in the "Legacy" section. Password grant and the oob redirect URI are gone.
 
 Features of the g10f SSO, set at the identity provider:
 - `user_navigation_uri`: the navigation bar shows the applications, the profile and the picture of the user like
@@ -107,32 +104,26 @@ The demo passes these relying party test plans of the
 [OpenID Foundation conformance suite](https://www.certification.openid.net/) (it is not certified), all with
 `client_secret_basic` and plain authorization requests; the links show the published results:
 
-- [`oidcc-client-basic-certification-test-plan`](https://www.certification.openid.net/plan-detail.html?plan=1qzsZSmGudmnt&public=true):
-  authorization code flow (`idtoken-sig-none` is skipped by the suite: it only runs for clients registered for
-  unsigned ID tokens, which the demo doesn't accept)
-- [`oidcc-client-implicit-certification-test-plan`](https://www.certification.openid.net/plan-detail.html?plan=PWJRVoaeFMwW7&public=true):
-  implicit flow, `id_token` and `id_token token`
-- [`oidcc-client-back-channel-logout-rp-basic`](https://www.certification.openid.net/plan-detail.html?plan=qOlchjXIK6JTU&public=true):
-  RP-initiated logout with back-channel logout, including the rejection of invalid logout tokens
-- [`oidcc-client-rp-initiated-logout-rp-basic`](https://www.certification.openid.net/plan-detail.html?plan=Gk3X04A3mj9hp&public=true):
-  RP-initiated logout, including a wrong and a missing `state` on the way back (the suite requires a back- or
-  front-channel logout URI for it, the plan ran with back-channel logout)
-- [`oidcc-client-front-channel-logout-rp-basic`](https://www.certification.openid.net/plan-detail.html?plan=L4oefefzGgIQJ&public=true):
-  RP-initiated logout with front-channel logout; the result is "review" instead of "passed", because the suite can't
-  see whether the demo has logged out and leaves that to a screenshot checked by the certification team
+- [basic](https://www.certification.openid.net/plan-detail.html?plan=1qzsZSmGudmnt&public=true):
+  authorization code flow (`idtoken-sig-none` is skipped, the demo doesn't accept unsigned ID tokens)
+- [implicit](https://www.certification.openid.net/plan-detail.html?plan=PWJRVoaeFMwW7&public=true):
+  `id_token` and `id_token token`
+- [back-channel logout](https://www.certification.openid.net/plan-detail.html?plan=qOlchjXIK6JTU&public=true):
+  including invalid logout tokens
+- [RP-initiated logout](https://www.certification.openid.net/plan-detail.html?plan=Gk3X04A3mj9hp&public=true):
+  including a wrong and a missing `state` (run with back-channel logout, the suite requires a logout URI)
+- [front-channel logout](https://www.certification.openid.net/plan-detail.html?plan=L4oefefzGgIQJ&public=true):
+  result "review", the suite leaves the check of the logout to a screenshot
 
-The response mode `form_post` is not supported on purpose: the answer is a cross-site POST, which doesn't carry the
-session cookie (`SameSite=Lax`). The plan for the login initiated by a third party has not been run yet.
+`form_post` is not supported on purpose: the answer is a cross-site POST without the session cookie
+(`SameSite=Lax`). The plan for the login initiated by a third party has not been run yet.
 
-To run a plan, add an identity provider with the issuer of the plan
-(`https://www.certification.openid.net/test/a/<alias>/`, then the discovery button) and a client with the client id
-and secret of the plan. Notes:
-- The implicit flow needs https for its redirect URI, so it can't be tested against localhost.
-- The implicit plan tests `id_token` first and `id_token token` later: switch the flow of the client in between.
-- Most tests wait for the user info request: open the user info page after each login.
-- The suite requires an https `initiate_login_uri`.
-- Logout plans: set `end_session_endpoint` (discovery button and save) and turn on only the logout option of the
-  plan at the client.
+To run a plan, add an identity provider with the issuer `https://www.certification.openid.net/test/a/<alias>/`
+(discovery button, save) and a client with the client id and secret of the plan. Notes:
+- The implicit flow and the `initiate_login_uri` need https, so they can't be tested against localhost.
+- Open the user info page after each login, most tests wait for it. The implicit plan tests `id_token` first and
+  `id_token token` later: switch the flow of the client in between.
+- Logout plans: turn on only the logout option of the plan at the client.
 
 Configuration
 -------------
@@ -191,8 +182,6 @@ issuer, native and service clients). The redirect URI of 2.x (`/oauth2/login/`) 
 logout URIs, see the admin page of a client.
 The environment variables `SSO.STAFF_GROUPS`, `SSO.SUPERUSER_GROUP`, `OPENID_SSO_SERVER_BASE_URL` and
 `ALWAYS_REFRESH_TOKENS` are gone; staff and superuser roles are set per client.
-
-The entrypoint stops if `SECRET_KEY` is not set, before it runs any `manage.py` command.
 
 Development
 -----------
